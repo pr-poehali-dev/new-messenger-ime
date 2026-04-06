@@ -3,6 +3,7 @@ import Icon from "@/components/ui/icon";
 
 type Tab = "chats" | "calls" | "gifts" | "wallet" | "profile";
 type GiftsTab = "market" | "my" | "activity";
+type CollectionFilter = "all" | "ultra_rare" | "celebrity" | "seasonal" | "special";
 type PanelMode = "emoji" | "attach" | null;
 type Rarity = "common" | "rare" | "epic" | "legendary" | "special";
 
@@ -51,122 +52,140 @@ const RARITY_META: Record<Rarity, { label: string; color: string; glow: string; 
   special:   { label: "Особый",     color: "#FF6B8A", glow: "rgba(255,107,138,0.45)", border: "rgba(255,107,138,0.65)" },
 };
 
+// helper
+const g = (
+  id: string, emoji: string, name: string, col: string,
+  price: number, rarity: Rarity, supply: number,
+  bg: string, pc: string,
+  attrs: { trait: string; value: string; rarity: number }[],
+  isNFT = true, rent?: number
+): NFTGift => ({
+  id, emoji, name, collection: col,
+  price, floorPrice: Math.round(price * 0.88),
+  rarity, totalSupply: supply,
+  owners: Math.round(supply * 0.62),
+  isNFT, isForSale: true,
+  isForRent: !!rent, rentPricePerDay: rent,
+  upgradeStars: 25, attrs, bg, particleColor: pc,
+});
+
 const NFT_GIFTS: NFTGift[] = [
-  {
-    id: "g1", emoji: "💎", name: "Бриллиант", collection: "Jewels of TON",
-    price: 850, floorPrice: 780, rarity: "legendary",
-    totalSupply: 999, owners: 634, isNFT: true, isForSale: true, isForRent: false,
-    upgradeStars: 25,
-    attrs: [{ trait: "Цвет", value: "Синий", rarity: 12 }, { trait: "Огранка", value: "Принцесса", rarity: 5 }, { trait: "Блеск", value: "Максимальный", rarity: 3 }],
-    bg: "linear-gradient(135deg,#0d0a2e 0%,#1a1060 50%,#0a0820 100%)",
-    particleColor: "#7C6FFF",
-  },
-  {
-    id: "g2", emoji: "🌹", name: "Вечная роза", collection: "Flowers",
-    price: 95, floorPrice: 80, rarity: "rare",
-    totalSupply: 9999, owners: 5231, isNFT: true, isForSale: true, isForRent: true,
-    rentPricePerDay: 3, upgradeStars: 25,
-    attrs: [{ trait: "Цвет", value: "Алый", rarity: 28 }, { trait: "Вид", value: "Бутон", rarity: 40 }],
-    bg: "linear-gradient(135deg,#2a0a0a 0%,#5a1520 100%)",
-    particleColor: "#FF6B8A",
-  },
-  {
-    id: "g3", emoji: "🐱", name: "Лунный котик", collection: "Cosmic Pets",
-    price: 220, floorPrice: 195, rarity: "epic",
-    totalSupply: 3333, owners: 1842, isNFT: true, isForSale: true, isForRent: true,
-    rentPricePerDay: 8, upgradeStars: 25,
-    attrs: [{ trait: "Шерсть", value: "Лунная", rarity: 8 }, { trait: "Глаза", value: "Звёздные", rarity: 12 }, { trait: "Аксессуар", value: "Корона", rarity: 4 }],
-    bg: "linear-gradient(135deg,#0a1a3a 0%,#1a2a5a 100%)",
-    particleColor: "#3ECFB2",
-  },
-  {
-    id: "g4", emoji: "⭐", name: "Золотая звезда", collection: "Stars",
-    price: 450, floorPrice: 410, rarity: "legendary",
-    totalSupply: 1500, owners: 980, isNFT: true, isForSale: false, isForRent: true,
-    rentPricePerDay: 15, upgradeStars: 25,
-    attrs: [{ trait: "Лучей", value: "8", rarity: 10 }, { trait: "Сияние", value: "Максимальное", rarity: 5 }],
-    bg: "linear-gradient(135deg,#1a1000 0%,#3a2800 100%)",
-    particleColor: "#FFB347",
-  },
-  {
-    id: "g5", emoji: "🏆", name: "Кубок чемпиона", collection: "Legends",
-    price: 1500, floorPrice: 1350, rarity: "special",
-    totalSupply: 333, owners: 201, isNFT: true, isForSale: true, isForRent: false,
-    upgradeStars: 25,
-    attrs: [{ trait: "Металл", value: "Платина", rarity: 3 }, { trait: "Гравировка", value: "Уникальная", rarity: 2 }, { trait: "Камень", value: "Рубин", rarity: 7 }],
-    bg: "linear-gradient(135deg,#1a0f00 0%,#3a1f00 50%,#1a0f00 100%)",
-    particleColor: "#FF6B8A",
-  },
-  {
-    id: "g6", emoji: "🦋", name: "Бабочка мечты", collection: "Dreams",
-    price: 175, floorPrice: 155, rarity: "epic",
-    totalSupply: 4444, owners: 2103, isNFT: true, isForSale: true, isForRent: true,
-    rentPricePerDay: 6, upgradeStars: 25,
-    attrs: [{ trait: "Окраска", value: "Голографическая", rarity: 6 }, { trait: "Вид", value: "Морфо", rarity: 15 }],
-    bg: "linear-gradient(135deg,#150a2a 0%,#2a1040 100%)",
-    particleColor: "#c37dff",
-  },
-  {
-    id: "g7", emoji: "🔮", name: "Хрустальный шар", collection: "Mystic",
-    price: 380, floorPrice: 340, rarity: "legendary",
-    totalSupply: 1111, owners: 745, isNFT: true, isForSale: true, isForRent: true,
-    rentPricePerDay: 12, upgradeStars: 25,
-    attrs: [{ trait: "Видение", value: "Будущее", rarity: 5 }, { trait: "Туман", value: "Фиолетовый", rarity: 18 }],
-    bg: "linear-gradient(135deg,#080a1f 0%,#12163a 100%)",
-    particleColor: "#c37dff",
-  },
-  {
-    id: "g8", emoji: "🌊", name: "Океанская волна", collection: "Elements",
-    price: 130, floorPrice: 115, rarity: "rare",
-    totalSupply: 7777, owners: 4102, isNFT: false, isForSale: true, isForRent: false,
-    upgradeStars: 25,
-    attrs: [{ trait: "Высота", value: "Огромная", rarity: 20 }, { trait: "Пена", value: "Золотая", rarity: 8 }],
-    bg: "linear-gradient(135deg,#050f1f 0%,#0a1e35 100%)",
-    particleColor: "#3ECFB2",
-  },
-  {
-    id: "g9", emoji: "🎭", name: "Маска театра", collection: "Arts",
-    price: 60, floorPrice: 50, rarity: "common",
-    totalSupply: 19999, owners: 11234, isNFT: false, isForSale: true, isForRent: false,
-    upgradeStars: 25,
-    attrs: [{ trait: "Выражение", value: "Радость", rarity: 50 }],
-    bg: "linear-gradient(135deg,#1a0a10 0%,#2a1020 100%)",
-    particleColor: "#FF6B8A",
-  },
-  {
-    id: "g10", emoji: "🦄", name: "Единорог вечности", collection: "Mythical",
-    price: 2200, floorPrice: 2050, rarity: "special",
-    totalSupply: 100, owners: 87, isNFT: true, isForSale: true, isForRent: false,
-    upgradeStars: 25,
-    attrs: [{ trait: "Рог", value: "Алмазный", rarity: 1 }, { trait: "Грива", value: "Радужная", rarity: 2 }, { trait: "Копыта", value: "Золотые", rarity: 3 }],
-    bg: "linear-gradient(135deg,#1a0830 0%,#350f60 50%,#1a0830 100%)",
-    particleColor: "#c37dff",
-  },
-  {
-    id: "g11", emoji: "🎵", name: "Золотая нота", collection: "Music",
-    price: 88, floorPrice: 75, rarity: "common",
-    totalSupply: 15000, owners: 8904, isNFT: false, isForSale: true, isForRent: false,
-    upgradeStars: 25,
-    attrs: [{ trait: "Тональность", value: "До мажор", rarity: 35 }],
-    bg: "linear-gradient(135deg,#0a1020 0%,#142040 100%)",
-    particleColor: "#FFB347",
-  },
-  {
-    id: "g12", emoji: "🎸", name: "Легендарная гитара", collection: "Music",
-    price: 320, floorPrice: 290, rarity: "epic",
-    totalSupply: 2222, owners: 1341, isNFT: true, isForSale: true, isForRent: true,
-    rentPricePerDay: 10, upgradeStars: 25,
-    attrs: [{ trait: "Дерево", value: "Красное", rarity: 12 }, { trait: "Струны", value: "Золотые", rarity: 8 }, { trait: "Форма", value: "Flying V", rarity: 5 }],
-    bg: "linear-gradient(135deg,#1a0800 0%,#2e1200 100%)",
-    particleColor: "#FFB347",
-  },
+  // ── ULTRA RARE (legendary / special) ──────────────────────────────────────
+  g("heart-locket","💛","Heart Locket","Ultra Rare",18500,"special",1970,"linear-gradient(135deg,#2a0a14,#5a0a28)","#FF6B8A",[{trait:"Металл",value:"Золото",rarity:2},{trait:"Камень",value:"Рубин",rarity:1}],true,60),
+  g("durovs-cap","🧢","Durov's Cap","Ultra Rare",12400,"special",5000,"linear-gradient(135deg,#0a0a1a,#1a1a3a)","#7C6FFF",[{trait:"Цвет",value:"Тёмно-синий",rarity:5},{trait:"Логотип",value:"Telegram",rarity:3}],true,40),
+  g("golden-key","🔑","Golden Key","Ultra Rare",9800,"special",3000,"linear-gradient(135deg,#1a1000,#3a2800)","#FFB347",[{trait:"Металл",value:"Золото",rarity:3},{trait:"Гравировка",value:"TON",rarity:2}],true,30),
+  g("precious-peach","🍑","Precious Peach","Ultra Rare",8700,"legendary",3200,"linear-gradient(135deg,#2a1000,#4a2010)","#FF9A5C",[{trait:"Спелость",value:"Идеальная",rarity:4},{trait:"Цвет",value:"Золотистый",rarity:6}],true,25),
+  g("plush-pepe","🐸","Plush Pepe","Ultra Rare",6500,"legendary",10000,"linear-gradient(135deg,#0a1a0a,#102010)","#3ECFB2",[{trait:"Материал",value:"Плюш",rarity:5},{trait:"Глаза",value:"Классические",rarity:8}],true,20),
+  g("diamond-dog","💎","Diamond Dog","Ultra Rare",5200,"legendary",7500,"linear-gradient(135deg,#080a1f,#12163a)","#c37dff",[{trait:"Порода",value:"Бульдог",rarity:6},{trait:"Огранка",value:"Brilliant",rarity:4}],true,18),
+  g("heroic-helmet","⛑️","Heroic Helmet","Ultra Rare",4100,"legendary",3800,"linear-gradient(135deg,#1a0a0a,#3a1010)","#FF6B8A",[{trait:"Металл",value:"Сталь",rarity:7},{trait:"Гребень",value:"Золотой",rarity:5}],true,14),
+  g("mighty-arm","💪","Mighty Arm","Ultra Rare",3800,"legendary",4100,"linear-gradient(135deg,#0a0a1a,#1a1040)","#7C6FFF",[{trait:"Браслет",value:"Энергетический",rarity:6},{trait:"Мощь",value:"Максимальная",rarity:3}],true,12),
+  g("ion-gem","💠","Ion Gem","Ultra Rare",3200,"legendary",4700,"linear-gradient(135deg,#060a18,#0e1630)","#3ECFB2",[{trait:"Тип",value:"Ион",rarity:8},{trait:"Свечение",value:"Плазма",rarity:4}],true,10),
+  g("nail-bracelet","📿","Nail Bracelet","Ultra Rare",2900,"legendary",4800,"linear-gradient(135deg,#1a0820,#2a1040)","#c37dff",[{trait:"Материал",value:"Нержавейка",rarity:9},{trait:"Гравировка",value:"Руны",rarity:5}],true,9),
+  g("perfume-bottle","🧴","Perfume Bottle","Ultra Rare",2700,"legendary",4800,"linear-gradient(135deg,#0a1828,#102038)","#7C6FFF",[{trait:"Аромат",value:"Таинственный",rarity:7},{trait:"Флакон",value:"Хрусталь",rarity:5}],true,9),
+  g("magic-potion","🧪","Magic Potion","Ultra Rare",2500,"legendary",4900,"linear-gradient(135deg,#0a200a,#102810)","#3ECFB2",[{trait:"Цвет",value:"Изумрудный",rarity:6},{trait:"Эффект",value:"Телепортация",rarity:4}],true,8),
+  g("mini-oscar","🏆","Mini Oscar","Ultra Rare",2200,"legendary",5600,"linear-gradient(135deg,#1a1000,#2e1e00)","#FFB347",[{trait:"Металл",value:"Золото",rarity:5},{trait:"Гравировка",value:"Уникальная",rarity:3}],true,7),
+  g("signet-ring","💍","Signet Ring","Ultra Rare",1900,"legendary",18500,"linear-gradient(135deg,#1a0a0a,#2a1010)","#FF6B8A",[{trait:"Камень",value:"Рубин",rarity:8},{trait:"Металл",value:"Золото",rarity:6}],true,6),
+  g("loot-bag","🎒","Loot Bag","Ultra Rare",1700,"legendary",14500,"linear-gradient(135deg,#0a0e1a,#141e30)","#7C6FFF",[{trait:"Содержимое",value:"Секрет",rarity:3},{trait:"Замок",value:"Магический",rarity:5}],true,5),
+  g("kissed-frog","🐸","Kissed Frog","Ultra Rare",1500,"legendary",14300,"linear-gradient(135deg,#0a1a0a,#0e2410)","#3ECFB2",[{trait:"Выражение",value:"Счастливое",rarity:10},{trait:"Корона",value:"Золотая",rarity:4}],true,5),
+
+  // ── EPIC ──────────────────────────────────────────────────────────────────
+  g("astral-shard","🔮","Astral Shard","Mystic",980,"epic",6200,"linear-gradient(135deg,#080a1f,#12163a)","#c37dff",[{trait:"Кристалл",value:"Астральный",rarity:9},{trait:"Свечение",value:"Пульсирующее",rarity:7}],true,3),
+  g("gem-signet","💎","Gem Signet","Jewels",860,"epic",7000,"linear-gradient(135deg,#0d0a2e,#1a1060)","#7C6FFF",[{trait:"Огранка",value:"Изумруд",rarity:11},{trait:"Оправа",value:"Платина",rarity:7}],true,3),
+  g("artisan-brick","🧱","Artisan Brick","Craft",720,"epic",6900,"linear-gradient(135deg,#1a0800,#2e1200)","#FFB347",[{trait:"Материал",value:"Редкая глина",rarity:12},{trait:"Узор",value:"Ручная работа",rarity:8}],true),
+  g("sharp-tongue","👅","Sharp Tongue","Mystic",650,"epic",8500,"linear-gradient(135deg,#2a0a14,#4a1028)","#FF6B8A",[{trait:"Острота",value:"Максимальная",rarity:6},{trait:"Цвет",value:"Пурпурный",rarity:9}],true,2),
+  g("bonded-ring","💍","Bonded Ring","Jewels",580,"epic",8100,"linear-gradient(135deg,#100818,#1e1030)","#c37dff",[{trait:"Связь",value:"Вечная",rarity:8},{trait:"Камень",value:"Аметист",rarity:11}],true,2),
+  g("electric-skull","💀","Electric Skull","Dark",520,"epic",9400,"linear-gradient(135deg,#0a0a0a,#1a1020)","#c37dff",[{trait:"Разряд",value:"Молния",rarity:7},{trait:"Глаза",value:"Неон",rarity:9}],true,2),
+  g("scared-cat","🐱","Scared Cat","Animals",480,"epic",19300,"linear-gradient(135deg,#0a0a1a,#10102a)","#7C6FFF",[{trait:"Выражение",value:"Испуганное",rarity:14},{trait:"Окрас",value:"Полосатый",rarity:18}],true,2),
+  g("neko-helmet","🪖","Neko Helmet","Cosplay",440,"epic",16100,"linear-gradient(135deg,#0a1828,#102038)","#3ECFB2",[{trait:"Ушки",value:"Розовые",rarity:12},{trait:"Стиль",value:"Аниме",rarity:8}],true),
+  g("crystal-ball","🔮","Crystal Ball","Mystic",410,"epic",27700,"linear-gradient(135deg,#100a28,#1e1048)","#c37dff",[{trait:"Видение",value:"Будущее",rarity:10},{trait:"Туман",value:"Фиолетовый",rarity:13}],true,1),
+  g("skull-flower","💀","Skull Flower","Dark",380,"epic",24100,"linear-gradient(135deg,#0a0a14,#141428)","#FF6B8A",[{trait:"Цветок",value:"Чёрная роза",rarity:9},{trait:"Взгляд",value:"Загадочный",rarity:11}],true),
+  g("voodoo-doll","🪆","Voodoo Doll","Dark",360,"epic",27600,"linear-gradient(135deg,#140a08,#281410)","#FF9A5C",[{trait:"Игла",value:"Серебряная",rarity:8},{trait:"Нить",value:"Красная",rarity:10}],true),
+  g("flying-broom","🧹","Flying Broom","Magic",340,"epic",25900,"linear-gradient(135deg,#0c0814,#181028)","#c37dff",[{trait:"Скорость",value:"Гиперзвук",rarity:6},{trait:"Рукоять",value:"Дуб",rarity:12}],true),
+  g("ionic-dryer","💨","Ionic Dryer","Tech",320,"epic",25700,"linear-gradient(135deg,#0a1020,#101828)","#3ECFB2",[{trait:"Мощность",value:"5000W",rarity:7},{trait:"Технология",value:"Ионная",rarity:5}],true),
+  g("trapped-heart","💔","Trapped Heart","Romance",300,"epic",26400,"linear-gradient(135deg,#1a0808,#2e1010)","#FF6B8A",[{trait:"Цепи",value:"Золотые",rarity:9},{trait:"Разлом",value:"Трещина судьбы",rarity:6}],true),
+  g("love-potion","🧪","Love Potion","Magic",280,"epic",30400,"linear-gradient(135deg,#1a0010,#2e0020)","#FF6B8A",[{trait:"Аромат",value:"Розовый",rarity:11},{trait:"Эффект",value:"Неотразимость",rarity:7}],true),
+  g("diamond-ring","💍","Diamond Ring","Jewels",260,"epic",32900,"linear-gradient(135deg,#0a0a18,#14143a)","#7C6FFF",[{trait:"Камень",value:"Бриллиант",rarity:8},{trait:"Огранка",value:"Принцесса",rarity:6}],true),
+  g("top-hat","🎩","Top Hat","Fashion",240,"epic",35100,"linear-gradient(135deg,#080808,#181818)","#8890a4",[{trait:"Материал",value:"Шёлк",rarity:10},{trait:"Лента",value:"Пурпурная",rarity:12}],true),
+  g("vintage-cigar","🚬","Vintage Cigar","Lifestyle",220,"epic",31000,"linear-gradient(135deg,#1a0e04,#2e1c08)","#FFB347",[{trait:"Выдержка",value:"50 лет",rarity:5},{trait:"Происхождение",value:"Куба",rarity:7}],true),
+  g("mad-pumpkin","🎃","Mad Pumpkin","Halloween",200,"epic",22200,"linear-gradient(135deg,#1e0a00,#3c1400)","#FF9A5C",[{trait:"Выражение",value:"Безумное",rarity:8},{trait:"Резьба",value:"Узор тьмы",rarity:6}],true),
+  g("swiss-watch","⌚","Swiss Watch","Luxury",185,"epic",29300,"linear-gradient(135deg,#0a0e18,#14182e)","#8890a4",[{trait:"Механизм",value:"Турбийон",rarity:4},{trait:"Корпус",value:"Платина",rarity:5}],true),
+  g("cupid-charm","💘","Cupid Charm","Romance",170,"epic",33100,"linear-gradient(135deg,#1a0010,#30001e)","#FF6B8A",[{trait:"Стрела",value:"Золотая",rarity:9},{trait:"Эффект",value:"Вечная любовь",rarity:6}],true),
+
+  // ── RARE ──────────────────────────────────────────────────────────────────
+  g("hanging-star","⭐","Hanging Star","Celestial",145,"rare",58100,"linear-gradient(135deg,#0e0c1a,#1a1830)","#FFB347",[{trait:"Нить",value:"Серебро",rarity:18},{trait:"Блеск",value:"Пульсация",rarity:14}],true),
+  g("eternal-candle","🕯️","Eternal Candle","Mystic",130,"rare",46600,"linear-gradient(135deg,#1a1000,#2e1c00)","#FFB347",[{trait:"Пламя",value:"Вечное",rarity:16},{trait:"Воск",value:"Чёрный",rarity:20}],true),
+  g("record-player","🎵","Record Player","Music",118,"rare",46900,"linear-gradient(135deg,#0a0a14,#141428)","#8890a4",[{trait:"Пластинка",value:"Ретро",rarity:20},{trait:"Игла",value:"Золотая",rarity:15}],true),
+  g("hex-pot","⚗️","Hex Pot","Magic",105,"rare",69800,"linear-gradient(135deg,#0a1a0a,#101e10)","#3ECFB2",[{trait:"Зелье",value:"Проклятие",rarity:17},{trait:"Пар",value:"Фиолетовый",rarity:22}],true),
+  g("berry-box","🫐","Berry Box","Food",95,"rare",66600,"linear-gradient(135deg,#100820,#1c1038)","#c37dff",[{trait:"Ягоды",value:"Черника",rarity:24},{trait:"Коробка",value:"Деревянная",rarity:30}],true),
+  g("bow-tie","🎀","Bow Tie","Fashion",88,"rare",65700,"linear-gradient(135deg,#1a0010,#2e0020)","#FF6B8A",[{trait:"Цвет",value:"Малиновый",rarity:22},{trait:"Материал",value:"Шёлк",rarity:18}],true),
+  g("valentine-box","💝","Valentine Box","Romance",80,"rare",41000,"linear-gradient(135deg,#1a0808,#2e1010)","#FF6B8A",[{trait:"Начинка",value:"Трюфели",rarity:25},{trait:"Лента",value:"Золотая",rarity:18}],true),
+  g("snow-globe","❄️","Snow Globe","Winter",75,"rare",72800,"linear-gradient(135deg,#0a1428,#0e1e3c)","#3ECFB2",[{trait:"Фигурка",value:"Ёлочка",rarity:20},{trait:"Снег",value:"Серебряный",rarity:25}],true),
+  g("love-candle","🕯️","Love Candle","Romance",70,"rare",30300,"linear-gradient(135deg,#1a0810,#2e1020)","#FF6B8A",[{trait:"Аромат",value:"Роза",rarity:18},{trait:"Цвет",value:"Красный",rarity:22}],true),
+  g("sleigh-bell","🔔","Sleigh Bell","Winter",65,"rare",28000,"linear-gradient(135deg,#0a1208,#101e0e)","#3ECFB2",[{trait:"Металл",value:"Серебро",rarity:20},{trait:"Звук",value:"Магический",rarity:15}],true),
+  g("toy-bear","🧸","Toy Bear","Toys",60,"rare",57700,"linear-gradient(135deg,#1a0e04,#2e1a08)","#FFB347",[{trait:"Мех",value:"Плюш",rarity:28},{trait:"Глазки",value:"Пуговицы",rarity:32}],true),
+  g("sky-stilettos","👠","Sky Stilettos","Fashion",55,"rare",58600,"linear-gradient(135deg,#1a0010,#2a0018)","#FF6B8A",[{trait:"Высота",value:"15 см",rarity:10},{trait:"Материал",value:"Кожа питона",rarity:14}],true),
+  g("eternal-rose","🌹","Eternal Rose","Flowers",50,"rare",37600,"linear-gradient(135deg,#1a0808,#300c0c)","#FF6B8A",[{trait:"Цвет",value:"Чёрный",rarity:15},{trait:"Вечность",value:"Заморожена",rarity:10}],true),
+  g("snow-mittens","🧤","Snow Mittens","Winter",45,"rare",50000,"linear-gradient(135deg,#0a1428,#102040)","#3ECFB2",[{trait:"Узор",value:"Скандинавский",rarity:25},{trait:"Цвет",value:"Красный",rarity:30}],true),
+
+  // ── COMMON (seasonal, массовые) ────────────────────────────────────────────
+  g("lunar-snake","🐍","Lunar Snake","Zodiac",38,"common",259300,"linear-gradient(135deg,#0a1a08,#0e2210)","#3ECFB2",[{trait:"Год",value:"Змеи",rarity:50},{trait:"Фаза",value:"Полнолуние",rarity:40}],false),
+  g("moon-pendant","🌙","Moon Pendant","Celestial",35,"common",111100,"linear-gradient(135deg,#0a0e1a,#10162a)","#8890a4",[{trait:"Фаза",value:"Убывающая",rarity:40},{trait:"Цвет",value:"Серебряный",rarity:45}],false),
+  g("sakura-flower","🌸","Sakura Flower","Flowers",32,"common",93100,"linear-gradient(135deg,#1a0814,#2e1020)","#FF6B8A",[{trait:"Лепестки",value:"5",rarity:50},{trait:"Сезон",value:"Весна",rarity:45}],false),
+  g("holiday-drink","🥂","Holiday Drink","Celebration",30,"common",121000,"linear-gradient(135deg,#1a1000,#2e1e00)","#FFB347",[{trait:"Напиток",value:"Шампанское",rarity:45},{trait:"Пузырьки",value:"Золотые",rarity:50}],false),
+  g("jelly-bunny","🐰","Jelly Bunny","Animals",28,"common",129400,"linear-gradient(135deg,#1a0814,#2e1020)","#FF6B8A",[{trait:"Вкус",value:"Клубника",rarity:40},{trait:"Цвет",value:"Розовый",rarity:45}],false),
+  g("light-sword","⚔️","Light Sword","Fantasy",26,"common",131200,"linear-gradient(135deg,#0a0a1a,#101030)","#7C6FFF",[{trait:"Цвет",value:"Синий",rarity:45},{trait:"Сила",value:"Джедайская",rarity:40}],false),
+  g("jingle-bells","🔔","Jingle Bells","Winter",24,"common",124600,"linear-gradient(135deg,#0a1208,#101e0e)","#3ECFB2",[{trait:"Количество",value:"3",rarity:50},{trait:"Материал",value:"Медь",rarity:45}],false),
+  g("lush-bouquet","💐","Lush Bouquet","Flowers",22,"common",140100,"linear-gradient(135deg,#0a1808,#0e2210)","#3ECFB2",[{trait:"Состав",value:"Смешанный",rarity:50},{trait:"Лента",value:"Розовая",rarity:45}],false),
+  g("spiced-wine","🍷","Spiced Wine","Food",20,"common",146100,"linear-gradient(135deg,#1a0808,#2e1010)","#FF6B8A",[{trait:"Сорт",value:"Глинтвейн",rarity:45},{trait:"Специи",value:"Корица",rarity:50}],false),
+  g("stellar-rocket","🚀","Stellar Rocket","Space",18,"common",156300,"linear-gradient(135deg,#080a14,#101828)","#7C6FFF",[{trait:"Цвет",value:"Красный",rarity:45},{trait:"Топливо",value:"TON",rarity:40}],false),
+  g("big-year","🎊","Big Year","Celebration",16,"common",101400,"linear-gradient(135deg,#1a1000,#2e1e00)","#FFB347",[{trait:"Год",value:"2026",rarity:50},{trait:"Конфетти",value:"Золотое",rarity:45}],false),
+  g("restless-jar","🫙","Restless Jar","Mystic",15,"common",120200,"linear-gradient(135deg,#0a1008,#101e10)","#3ECFB2",[{trait:"Содержимое",value:"Светлячки",rarity:50},{trait:"Крышка",value:"Деревянная",rarity:45}],false),
+  g("joyful-bundle","🎁","Joyful Bundle","Celebration",14,"common",114100,"linear-gradient(135deg,#1a0010,#2a0018)","#FF6B8A",[{trait:"Лента",value:"Красная",rarity:50},{trait:"Бумага",value:"Золотая",rarity:45}],false),
+  g("easter-egg","🥚","Easter Egg","Seasonal",13,"common",173200,"linear-gradient(135deg,#0a1828,#102038)","#3ECFB2",[{trait:"Рисунок",value:"Цветочный",rarity:45},{trait:"Цвет",value:"Пастель",rarity:50}],false),
+  g("spy-agaric","🍄","Spy Agaric","Nature",12,"common",89400,"linear-gradient(135deg,#0e0808,#1e0e0e)","#FF6B8A",[{trait:"Шляпка",value:"Красная",rarity:50},{trait:"Горошек",value:"Белый",rarity:45}],false),
+  g("winter-wreath","🪢","Winter Wreath","Winter",11,"common",100800,"linear-gradient(135deg,#0a1208,#0e1e0e)","#3ECFB2",[{trait:"Состав",value:"Ель",rarity:50},{trait:"Декор",value:"Ягоды",rarity:45}],false),
+  g("hypno-lollipop","🍭","Hypno Lollipop","Food",10,"common",116600,"linear-gradient(135deg,#100818,#1e1030)","#c37dff",[{trait:"Узор",value:"Гипноз",rarity:45},{trait:"Цвет",value:"Радужный",rarity:50}],false),
+  g("jack-in-the-box","🎪","Jack-in-the-Box","Toys",9,"common",97300,"linear-gradient(135deg,#1a0800,#2e1200)","#FFB347",[{trait:"Персонаж",value:"Шут",rarity:50},{trait:"Пружина",value:"Стальная",rarity:45}],false),
+  g("witch-hat","🧙","Witch Hat","Halloween",8,"common",88500,"linear-gradient(135deg,#080808,#141420)","#c37dff",[{trait:"Размер",value:"Гигантский",rarity:50},{trait:"Полоска",value:"Золотая",rarity:45}],false),
+  g("star-notepad","📓","Star Notepad","Office",7,"common",99100,"linear-gradient(135deg,#0a0e1a,#101628)","#7C6FFF",[{trait:"Обложка",value:"Звёзды",rarity:50},{trait:"Бумага",value:"Небесная",rarity:45}],false),
+  g("evil-eye","👁️","Evil Eye","Mystic",6,"common",85200,"linear-gradient(135deg,#080c18,#0e1428)","#3ECFB2",[{trait:"Цвет",value:"Синий",rarity:50},{trait:"Сила",value:"Защита",rarity:45}],false),
+  g("tama-gadget","📱","Tama Gadget","Tech",5,"common",135100,"linear-gradient(135deg,#0a0e1a,#101828)","#7C6FFF",[{trait:"Питомец",value:"Котик",rarity:45},{trait:"Экран",value:"LCD",rarity:50}],false),
+  g("cookie-heart","🍪","Cookie Heart","Food",4,"common",264500,"linear-gradient(135deg,#1a0e04,#2e1a08)","#FFB347",[{trait:"Вкус",value:"Шоколад",rarity:50},{trait:"Глазурь",value:"Розовая",rarity:45}],false),
+  g("xmas-stocking","🧦","Xmas Stocking","Winter",3,"common",334600,"linear-gradient(135deg,#1a0808,#2e1010)","#FF6B8A",[{trait:"Узор",value:"Олени",rarity:50},{trait:"Подарок",value:"Есть",rarity:45}],false),
+  g("b-day-candle","🕯️","B-Day Candle","Celebration",3,"common",308600,"linear-gradient(135deg,#1a1000,#2e1e00)","#FFB347",[{trait:"Цвет",value:"Золотой",rarity:50},{trait:"Огонь",value:"Сердечко",rarity:45}],false),
+  g("candy-cane","🍬","Candy Cane","Winter",3,"common",320600,"linear-gradient(135deg,#1a0808,#2e1010)","#FF6B8A",[{trait:"Вкус",value:"Мята",rarity:50},{trait:"Полосы",value:"Красные",rarity:45}],false),
+  g("desk-calendar","📅","Desk Calendar","Office",2,"common",374100,"linear-gradient(135deg,#0a0e1a,#101628)","#8890a4",[{trait:"Год",value:"2026",rarity:50},{trait:"Обложка",value:"Кожаная",rarity:45}],false),
+  g("instant-ramen","🍜","Instant Ramen","Food",2,"common",457400,"linear-gradient(135deg,#1a0800,#2e1200)","#FF9A5C",[{trait:"Вкус",value:"Острый",rarity:50},{trait:"Лапша",value:"Рамен",rarity:45}],false),
+  g("lol-pop","🍭","Lol Pop","Food",1,"common",468700,"linear-gradient(135deg,#100818,#1e1030)","#c37dff",[{trait:"Вкус",value:"Арбуз",rarity:50},{trait:"Эффект",value:"Смех",rarity:45}],false),
+  g("clover-pin","🍀","Clover Pin","Nature",1,"common",271000,"linear-gradient(135deg,#0a1808,#102010)","#3ECFB2",[{trait:"Листьев",value:"4",rarity:30},{trait:"Удача",value:"Максимальная",rarity:35}],false),
+  g("party-sparkler","🎇","Party Sparkler","Celebration",1,"common",243800,"linear-gradient(135deg,#1a1000,#2e1e00)","#FFB347",[{trait:"Цвет",value:"Золото",rarity:50},{trait:"Время",value:"60 сек",rarity:45}],false),
+  g("mousse-cake","🎂","Mousse Cake","Food",1,"common",230500,"linear-gradient(135deg,#1a0814,#2e1020)","#FF6B8A",[{trait:"Вкус",value:"Шоколад",rarity:50},{trait:"Декор",value:"Ягоды",rarity:45}],false),
+  g("spring-basket","🧺","Spring Basket","Seasonal",1,"common",231300,"linear-gradient(135deg,#0a1808,#0e2010)","#3ECFB2",[{trait:"Содержимое",value:"Цветы",rarity:50},{trait:"Материал",value:"Ива",rarity:45}],false),
+  g("faith-amulet","🧿","Faith Amulet","Mystic",1,"common",172800,"linear-gradient(135deg,#0a0e1a,#101828)","#7C6FFF",[{trait:"Сила",value:"Защита",rarity:50},{trait:"Камень",value:"Лазурит",rarity:45}],false),
+  g("fresh-socks","🧦","Fresh Socks","Fun",1,"common",200500,"linear-gradient(135deg,#080e18,#101828)","#3ECFB2",[{trait:"Узор",value:"Смайлики",rarity:50},{trait:"Размер",value:"42",rarity:45}],false),
+  g("santa-hat","🎅","Santa Hat","Winter",1,"common",89000,"linear-gradient(135deg,#1a0808,#2e1010)","#FF6B8A",[{trait:"Помпон",value:"Белый",rarity:50},{trait:"Ткань",value:"Бархат",rarity:45}],false),
+  g("homemade-cake","🎂","Homemade Cake","Food",1,"common",199500,"linear-gradient(135deg,#1a0e04,#2e1a08)","#FFB347",[{trait:"Вкус",value:"Ваниль",rarity:50},{trait:"Декор",value:"Свечи",rarity:45}],false),
+  g("ginger-cookie","🍪","Ginger Cookie","Food",1,"common",188900,"linear-gradient(135deg,#1a0c04,#2e1808)","#FF9A5C",[{trait:"Форма",value:"Человечек",rarity:50},{trait:"Вкус",value:"Имбирь",rarity:45}],false),
+  g("jester-hat","🃏","Jester Hat","Carnival",1,"common",190200,"linear-gradient(135deg,#100818,#1e1030)","#c37dff",[{trait:"Цвета",value:"3",rarity:50},{trait:"Бубенцы",value:"Золотые",rarity:45}],false),
+  g("pet-snake","🐍","Pet Snake","Animals",1,"common",279100,"linear-gradient(135deg,#0a1808,#0e2010)","#3ECFB2",[{trait:"Окрас",value:"Зелёный",rarity:50},{trait:"Характер",value:"Ласковый",rarity:45}],false),
+  g("snake-box","📦","Snake Box","Zodiac",1,"common",273900,"linear-gradient(135deg,#0a1808,#102010)","#3ECFB2",[{trait:"Год",value:"Змеи",rarity:50},{trait:"Сюрприз",value:"Внутри",rarity:45}],false),
+  g("bunny-muffin","🐰","Bunny Muffin","Food",1,"common",66700,"linear-gradient(135deg,#1a0814,#2e1020)","#FF6B8A",[{trait:"Вкус",value:"Морковь",rarity:50},{trait:"Декор",value:"Ушки",rarity:45}],false),
+
+  // ── CELEBRITY ─────────────────────────────────────────────────────────────
+  g("snoop-dogg","🐕","Snoop Dogg","Celebrity",12,"common",595358,"linear-gradient(135deg,#0a1008,#101810)","#3ECFB2",[{trait:"Артист",value:"@snoopdogg",rarity:100},{trait:"Серия",value:"Официальная",rarity:100}],false),
+  g("swag-bag","👜","Swag Bag","Celebrity",18,"common",239091,"linear-gradient(135deg,#0a0a14,#141428)","#7C6FFF",[{trait:"Артист",value:"@snoopdogg",rarity:100},{trait:"Содержимое",value:"Секрет",rarity:80}],false),
+  g("snoop-cigar","🚬","Snoop Cigar","Celebrity",28,"rare",119806,"linear-gradient(135deg,#1a0e04,#2e1808)","#FFB347",[{trait:"Артист",value:"@snoopdogg",rarity:100},{trait:"Выдержка",value:"Особая",rarity:60}],false),
+  g("low-rider","🚗","Low Rider","Celebrity",85,"epic",23991,"linear-gradient(135deg,#0a0a18,#101030)","#c37dff",[{trait:"Артист",value:"@snoopdogg",rarity:100},{trait:"Цвет",value:"Фиолетовый",rarity:20}],false),
+  g("westside-sign","🤙","Westside Sign","Celebrity",280,"legendary",11995,"linear-gradient(135deg,#080a14,#10142a)","#7C6FFF",[{trait:"Артист",value:"@snoopdogg",rarity:100},{trait:"Редкость",value:"Ультра",rarity:5}],false),
+  g("khabibs-papakha","🪖","Khabib's Papakha","Celebrity",120,"epic",29000,"linear-gradient(135deg,#0e1208,#182010)","#3ECFB2",[{trait:"Артист",value:"@khabib_nurmagomedov",rarity:100},{trait:"Материал",value:"Каракуль",rarity:15}],false),
+  g("ufc-strike","🥊","UFC Strike","Celebrity",45,"rare",60000,"linear-gradient(135deg,#1a0808,#2e1010)","#FF6B8A",[{trait:"Организация",value:"@ufc",rarity:100},{trait:"Удар",value:"Нокаут",rarity:30}],false),
 ];
 
 const MY_NFTS: MyNFT[] = [
-  { ...NFT_GIFTS[0], tokenId: "#0042", mintedAt: "15.03.2025", status: "owned" },
-  { ...NFT_GIFTS[2], tokenId: "#1337", mintedAt: "02.04.2025", status: "listed", listPrice: 280 },
-  { ...NFT_GIFTS[5], tokenId: "#0888", mintedAt: "28.03.2025", status: "rented_out", rentDays: 3 },
-  { ...NFT_GIFTS[8], tokenId: "#9012", mintedAt: "10.04.2025", status: "owned", isNFT: false },
+  { ...NFT_GIFTS.find((x) => x.id === "durovs-cap")!, tokenId: "#0042", mintedAt: "15.03.2025", status: "owned" },
+  { ...NFT_GIFTS.find((x) => x.id === "astral-shard")!, tokenId: "#1337", mintedAt: "02.04.2025", status: "listed", listPrice: 1100 },
+  { ...NFT_GIFTS.find((x) => x.id === "eternal-rose")!, tokenId: "#0888", mintedAt: "28.03.2025", status: "rented_out", rentDays: 3 },
+  { ...NFT_GIFTS.find((x) => x.id === "lunar-snake")!, tokenId: "#9012", mintedAt: "10.04.2025", status: "owned", isNFT: false },
 ];
 
 const ACTIVITY: TxRecord[] = [
@@ -329,6 +348,8 @@ export default function Index() {
   const [nftAction, setNftAction] = useState<"buy" | "rent" | "upgrade" | "list" | null>(null);
   const [myNfts, setMyNfts] = useState<MyNFT[]>(MY_NFTS);
   const [rarityFilter, setRarityFilter] = useState<Rarity | "all">("all");
+  const [collectionFilter, setCollectionFilter] = useState<CollectionFilter>("all");
+  const [marketSearch, setMarketSearch] = useState("");
   const [sortBy, setSortBy] = useState<"price_asc" | "price_desc" | "rarity">("rarity");
   const [toast, setToast] = useState<string | null>(null);
   const [walletBalance] = useState(1247.5);
@@ -342,8 +363,31 @@ export default function Index() {
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 2500); };
 
+  const COL_FILTERS: Record<CollectionFilter, string> = {
+    all: "Все", ultra_rare: "🏆 Ультра-редкие", celebrity: "⭐ Знаменитости",
+    seasonal: "🎄 Сезонные", special: "✨ Особые",
+  };
+  const COL_SETS: Record<CollectionFilter, string[]> = {
+    all: [],
+    ultra_rare: ["Ultra Rare"],
+    celebrity: ["Celebrity"],
+    seasonal: ["Winter","Halloween","Seasonal","Zodiac","Celebration"],
+    special: ["Mystic","Dark","Magic","Fantasy","Space","Celestial"],
+  };
+
   const filteredGifts = NFT_GIFTS
-    .filter((g) => rarityFilter === "all" || g.rarity === rarityFilter)
+    .filter((gift) => {
+      if (rarityFilter !== "all" && gift.rarity !== rarityFilter) return false;
+      if (collectionFilter !== "all") {
+        const sets = COL_SETS[collectionFilter];
+        if (!sets.some((s) => gift.collection.includes(s))) return false;
+      }
+      if (marketSearch) {
+        const q = marketSearch.toLowerCase();
+        return gift.name.toLowerCase().includes(q) || gift.collection.toLowerCase().includes(q);
+      }
+      return true;
+    })
     .sort((a, b) => sortBy === "price_asc" ? a.price - b.price : sortBy === "price_desc" ? b.price - a.price : Object.keys(RARITY_META).indexOf(b.rarity) - Object.keys(RARITY_META).indexOf(a.rarity));
 
   useEffect(() => {
@@ -481,6 +525,18 @@ export default function Index() {
 
           {/* MARKET */}
           {giftsTab === "market" && <>
+            <div className="market-search-wrap">
+              <Icon name="Search" size={13} className="ime-search-icon" />
+              <input className="ime-search" style={{ paddingLeft: 30, fontSize: 12 }}
+                placeholder="Поиск подарка..."
+                value={marketSearch} onChange={(e) => setMarketSearch(e.target.value)} />
+            </div>
+            <div className="market-col-chips">
+              {(Object.keys(COL_FILTERS) as CollectionFilter[]).map((c) => (
+                <button key={c} className={`market-col-chip ${collectionFilter === c ? "active" : ""}`}
+                  onClick={() => setCollectionFilter(c)}>{COL_FILTERS[c]}</button>
+              ))}
+            </div>
             <div className="market-filters">
               <select className="market-select" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value as Rarity | "all")}>
                 <option value="all">Все редкости</option>
@@ -492,6 +548,7 @@ export default function Index() {
                 <option value="price_desc">Дороже</option>
               </select>
             </div>
+            <div className="market-count">Найдено: {filteredGifts.length} подарков</div>
             <div className="nft-market-grid">
               {filteredGifts.map((gift) => (
                 <NFTCard key={gift.id} gift={gift}

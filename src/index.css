@@ -422,6 +422,52 @@ body {
   color: var(--ime-accent);
 }
 
+/* Market search */
+.market-search-wrap {
+  position: relative;
+  margin: 8px 10px 6px;
+  flex-shrink: 0;
+}
+
+/* Collection chips */
+.market-col-chips {
+  display: flex;
+  gap: 5px;
+  padding: 0 10px 8px;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+.market-col-chips::-webkit-scrollbar {
+  display: none;
+}
+.market-col-chip {
+  white-space: nowrap;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: none;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--ime-input-bg);
+  color: var(--ime-text-muted);
+  font-family: "Golos Text", sans-serif;
+  transition: all 0.15s;
+}
+.market-col-chip:hover {
+  color: var(--ime-text);
+}
+.market-col-chip.active {
+  background: rgba(124, 111, 255, 0.18);
+  color: var(--ime-accent);
+}
+
+.market-count {
+  font-size: 11px;
+  color: var(--ime-text-muted);
+  padding: 0 10px 6px;
+  flex-shrink: 0;
+}
+
 /* Filters */
 .market-filters {
   display: flex;
