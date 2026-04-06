@@ -227,23 +227,12 @@ const STICKERS = [
 ];
 
 const initialChats: Chat[] = [
-  { id: 1, name: "Алина", avatar: "А", lastMessage: "Привет! Как дела?", time: "14:32", unread: 2, online: true,
-    messages: [{ id: 1, text: "Привет!", mine: false, time: "14:28" }, { id: 2, text: "Как дела?", mine: false, time: "14:28" }, { id: 3, text: "Всё отлично 😊", mine: true, time: "14:30", status: "read" }, { id: 4, text: "Привет! Как дела?", mine: false, time: "14:32" }] },
-  { id: 2, name: "Максим", avatar: "М", lastMessage: "Увидимся в пятницу", time: "13:15", unread: 0, online: true,
-    messages: [{ id: 1, text: "Ты на митинге?", mine: true, time: "13:10", status: "read" }, { id: 2, text: "Нет, буду позже", mine: false, time: "13:12" }, { id: 3, text: "Увидимся в пятницу", mine: false, time: "13:15" }] },
-  { id: 3, name: "Команда IME", avatar: "🚀", lastMessage: "Релиз сегодня в 18:00", time: "12:00", unread: 5, online: false,
+  { id: 3, name: "Команда православного", avatar: "✝️", lastMessage: "Релиз сегодня в 18:00", time: "12:00", unread: 5, online: false,
     messages: [{ id: 1, text: "Все готовы?", mine: false, time: "11:50" }, { id: 2, text: "Да, тесты прошли", mine: true, time: "11:55", status: "read" }, { id: 3, text: "Релиз сегодня в 18:00", mine: false, time: "12:00" }] },
-  { id: 4, name: "Соня", avatar: "С", lastMessage: "Окей, договорились!", time: "Вчера", unread: 0, online: false,
-    messages: [{ id: 1, text: "Встретимся у метро?", mine: true, time: "Вчера", status: "read" }, { id: 2, text: "Окей, договорились!", mine: false, time: "Вчера" }] },
-  { id: 5, name: "Иван Петров", avatar: "И", lastMessage: "Документы отправил", time: "Пн", unread: 0, online: false,
-    messages: [{ id: 1, text: "Нужны документы", mine: true, time: "Пн", status: "read" }, { id: 2, text: "Документы отправил", mine: false, time: "Пн" }] },
 ];
 
 const initialCalls = [
-  { id: 1, name: "Алина", avatar: "А", type: "in" as const, date: "Сегодня, 14:20", duration: "5 мин" },
-  { id: 2, name: "Максим", avatar: "М", type: "out" as const, date: "Сегодня, 11:05", duration: "12 мин" },
-  { id: 3, name: "Соня", avatar: "С", type: "missed" as const, date: "Вчера, 20:33" },
-  { id: 4, name: "Алина", avatar: "А", type: "out" as const, date: "Вчера, 18:10", duration: "3 мин" },
+  { id: 1, name: "Команда православного", avatar: "✝️", type: "in" as const, date: "Сегодня, 12:00", duration: "18 мин" },
 ];
 
 // ─── NFT CARD ──────────────────────────────────────────────────────────────
@@ -335,7 +324,7 @@ export default function Index() {
   const [tab, setTab] = useState<Tab>("chats");
   const [giftsTab, setGiftsTab] = useState<GiftsTab>("market");
   const [chats, setChats] = useState<Chat[]>(initialChats);
-  const [activeId, setActiveId] = useState<number | null>(1);
+  const [activeId, setActiveId] = useState<number | null>(3);
   const [input, setInput] = useState("");
   const [search, setSearch] = useState("");
   const [wallpaper, setWallpaper] = useState("default");
