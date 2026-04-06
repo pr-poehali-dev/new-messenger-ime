@@ -227,12 +227,12 @@ const STICKERS = [
 ];
 
 const initialChats: Chat[] = [
-  { id: 3, name: "Команда православного", avatar: "✝️", lastMessage: "Релиз сегодня в 18:00", time: "12:00", unread: 5, online: false,
+  { id: 3, name: "Команда православного", avatar: "🙏", lastMessage: "Релиз сегодня в 18:00", time: "12:00", unread: 5, online: false,
     messages: [{ id: 1, text: "Все готовы?", mine: false, time: "11:50" }, { id: 2, text: "Да, тесты прошли", mine: true, time: "11:55", status: "read" }, { id: 3, text: "Релиз сегодня в 18:00", mine: false, time: "12:00" }] },
 ];
 
 const initialCalls = [
-  { id: 1, name: "Команда православного", avatar: "✝️", type: "in" as const, date: "Сегодня, 12:00", duration: "18 мин" },
+  { id: 1, name: "Команда православного", avatar: "🙏", type: "in" as const, date: "Сегодня, 12:00", duration: "18 мин" },
 ];
 
 // ─── NFT CARD ──────────────────────────────────────────────────────────────
@@ -341,7 +341,17 @@ export default function Index() {
   const [marketSearch, setMarketSearch] = useState("");
   const [sortBy, setSortBy] = useState<"price_asc" | "price_desc" | "rarity">("rarity");
   const [toast, setToast] = useState<string | null>(null);
-  const [walletBalance] = useState(1247.5);
+  const [walletBalance, setWalletBalance] = useState(1247.5);
+  const [showChatMenu, setShowChatMenu] = useState(false);
+  const [showAddContact, setShowAddContact] = useState(false);
+  const [newContactName, setNewContactName] = useState("");
+  const [newContactPhone, setNewContactPhone] = useState("");
+  const [micMuted, setMicMuted] = useState(false);
+  const [speakerOn, setSpeakerOn] = useState(true);
+  const [videoCall, setVideoCall] = useState(false);
+  const [walletModal, setWalletModal] = useState<"send" | "receive" | "exchange" | null>(null);
+  const [walletInput, setWalletInput] = useState("");
+  const [nftSendTarget, setNftSendTarget] = useState<NFTGift | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -351,6 +361,57 @@ export default function Index() {
   const currentWp = WALLPAPERS.find((w) => w.id === wallpaper) ?? WALLPAPERS[0];
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 2500); };
+
+  const deleteChat = () => {
+    setChats((p) => p.filter((c) => c.id !== activeId));
+    setActiveId(null);
+    setShowChatMenu(false);
+    showToast("🗑 Чат удалён");
+  };
+
+  const clearChat = () => {
+    setChats((p) => p.map((c) => c.id === activeId ? { ...c, messages: [], lastMessage: "" } : c));
+    setShowChatMenu(false);
+    showToast("✅ История очищена");
+  };
+
+  const addContact = () => {
+    if (!newContactName.trim()) return;
+    const avatars = ["А","Б","В","Г","Д","Е","Ж","З","И","К","Л","М","Н","О","П","Р","С","Т","У","Ф","Х","Ц","Ч","Ш"];
+    const av = newContactName.trim()[0].toUpperCase();
+    const newChat: Chat = {
+      id: Date.now(), name: newContactName.trim(),
+      avatar: avatars.includes(av) ? av : "?",
+      lastMessage: "", time: "сейчас", unread: 0, online: false, messages: [],
+    };
+    setChats((p) => [newChat, ...p]);
+    setActiveId(newChat.id);
+    setShowAddContact(false);
+    setNewContactName(""); setNewContactPhone("");
+    setTab("chats");
+    showToast(`✅ Контакт ${newContactName.trim()} добавлен`);
+  };
+
+  const sendNFTToChat = (gift: NFTGift) => {
+    pushMsg({ mine: true, time: now(), status: "sent", mediaType: "gift", gift });
+    setNftSendTarget(null);
+    setTab("chats");
+    showToast(`🎁 ${gift.name} отправлен!`);
+  };
+
+  const handleWalletAction = () => {
+    if (walletModal === "send") {
+      const amount = parseFloat(walletInput);
+      if (!amount || amount <= 0 || amount > walletBalance) { showToast("❌ Неверная сумма"); return; }
+      setWalletBalance((b) => b - amount);
+      showToast(`✅ Отправлено ${amount} TON`);
+    } else if (walletModal === "receive") {
+      showToast("📋 Адрес скопирован");
+    } else if (walletModal === "exchange") {
+      showToast("🔄 Открываем биржу...");
+    }
+    setWalletModal(null); setWalletInput("");
+  };
 
   const COL_FILTERS: Record<CollectionFilter, string> = {
     all: "Все", ultra_rare: "🏆 Ультра-редкие", celebrity: "⭐ Знаменитости",
@@ -382,6 +443,13 @@ export default function Index() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeId, activeChat?.messages.length]);
+
+  useEffect(() => {
+    if (!showChatMenu) return;
+    const close = () => setShowChatMenu(false);
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, [showChatMenu]);
 
   useEffect(() => {
     if (activeId) setChats((p) => p.map((c) => c.id === activeId ? { ...c, unread: 0 } : c));
@@ -462,6 +530,9 @@ export default function Index() {
                 <Icon name={t === "chats" ? "MessageCircle" : t === "calls" ? "Phone" : t === "gifts" ? "Gift" : t === "wallet" ? "Wallet" : "User"} size={18} />
               </button>
             ))}
+            <button className="ime-tab-icon-btn" onClick={() => setShowAddContact(true)} title="Добавить контакт">
+              <Icon name="UserPlus" size={18} />
+            </button>
           </div>
         </div>
 
@@ -543,7 +614,7 @@ export default function Index() {
                 <NFTCard key={gift.id} gift={gift}
                   onBuy={() => { setSelectedNFT(gift); setNftAction("buy"); }}
                   onRent={() => { setSelectedNFT(gift); setNftAction("rent"); }}
-                  onSend={() => { pushMsg({ mine: true, time: now(), status: "sent", mediaType: "gift", gift }); setTab("chats"); showToast(`🎁 ${gift.name} отправлен!`); }}
+                  onSend={() => { setNftSendTarget(gift); }}
                 />
               ))}
             </div>
@@ -591,9 +662,9 @@ export default function Index() {
             <div className="ime-wallet-addr">UQBm...f9Kz</div>
           </div>
           <div className="ime-wallet-actions">
-            <button className="ime-wallet-btn"><Icon name="ArrowDownLeft" size={18} /><span>Получить</span></button>
-            <button className="ime-wallet-btn"><Icon name="ArrowUpRight" size={18} /><span>Отправить</span></button>
-            <button className="ime-wallet-btn"><Icon name="RefreshCw" size={18} /><span>Обменять</span></button>
+            <button className="ime-wallet-btn" onClick={() => setWalletModal("receive")}><Icon name="ArrowDownLeft" size={18} /><span>Получить</span></button>
+            <button className="ime-wallet-btn" onClick={() => setWalletModal("send")}><Icon name="ArrowUpRight" size={18} /><span>Отправить</span></button>
+            <button className="ime-wallet-btn" onClick={() => setWalletModal("exchange")}><Icon name="RefreshCw" size={18} /><span>Обменять</span></button>
           </div>
           <div className="ime-section-title" style={{ paddingTop: 16 }}>История</div>
           <div className="ime-tx-list">
@@ -660,9 +731,17 @@ export default function Index() {
             </div>
             <div className="ime-header-actions">
               <button className="ime-icon-btn" onClick={() => setActiveCall({ id: 0, name: activeChat.name, avatar: activeChat.avatar, type: "out", date: "Сейчас" })}><Icon name="Phone" size={18} /></button>
-              <button className="ime-icon-btn"><Icon name="Video" size={18} /></button>
+              <button className="ime-icon-btn" onClick={() => { setVideoCall(true); setActiveCall({ id: 0, name: activeChat.name, avatar: activeChat.avatar, type: "out", date: "Сейчас" }); }}><Icon name="Video" size={18} /></button>
               <button className="ime-icon-btn" onClick={() => setTab("gifts")}><Icon name="Gift" size={18} /></button>
-              <button className="ime-icon-btn"><Icon name="MoreVertical" size={18} /></button>
+              <div style={{ position: "relative" }}>
+                <button className="ime-icon-btn" onClick={() => setShowChatMenu((p) => !p)}><Icon name="MoreVertical" size={18} /></button>
+                {showChatMenu && (
+                  <div className="chat-menu-popup" onClick={(e) => e.stopPropagation()}>
+                    <button className="chat-menu-item" onClick={clearChat}><Icon name="Eraser" size={15} />Очистить историю</button>
+                    <button className="chat-menu-item danger" onClick={deleteChat}><Icon name="Trash2" size={15} />Удалить чат</button>
+                  </div>
+                )}
+              </div>
             </div>
           </header>
 
@@ -810,15 +889,112 @@ export default function Index() {
 
       {/* CALL OVERLAY */}
       {activeCall && (
-        <div className="ime-call-overlay" onClick={() => setActiveCall(null)}>
+        <div className="ime-call-overlay" onClick={() => { setActiveCall(null); setVideoCall(false); }}>
           <div className="ime-call-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="ime-call-avatar-xl" style={{ background: getAvatarBg(activeCall.avatar) }}>{activeCall.avatar}</div>
+            {videoCall ? (
+              <div className="video-call-screen">
+                <div className="video-call-bg">
+                  <span style={{ fontSize: 80 }}>{activeCall.avatar}</span>
+                </div>
+                <div className="video-call-self">
+                  <span style={{ fontSize: 28 }}>🤳</span>
+                </div>
+              </div>
+            ) : (
+              <div className="ime-call-avatar-xl" style={{ background: getAvatarBg(activeCall.avatar) }}>{activeCall.avatar}</div>
+            )}
             <div className="ime-call-modal-name">{activeCall.name}</div>
-            <div className="ime-call-modal-status">Звоним...</div>
+            <div className="ime-call-modal-status">{videoCall ? "Видеозвонок..." : "Звоним..."}</div>
             <div className="ime-call-modal-actions">
-              <button className="ime-call-action mic"><Icon name="Mic" size={22} /></button>
-              <button className="ime-call-action end" onClick={() => setActiveCall(null)}><Icon name="PhoneOff" size={22} /></button>
-              <button className="ime-call-action speaker"><Icon name="Volume2" size={22} /></button>
+              <button className={`ime-call-action mic ${micMuted ? "muted" : ""}`} onClick={() => { setMicMuted((p) => !p); showToast(micMuted ? "🎤 Микрофон включён" : "🔇 Микрофон выключен"); }}>
+                <Icon name={micMuted ? "MicOff" : "Mic"} size={22} />
+              </button>
+              <button className="ime-call-action end" onClick={() => { setActiveCall(null); setVideoCall(false); showToast("📵 Звонок завершён"); }}><Icon name="PhoneOff" size={22} /></button>
+              <button className={`ime-call-action speaker ${speakerOn ? "active-speaker" : ""}`} onClick={() => { setSpeakerOn((p) => !p); showToast(speakerOn ? "🔈 Динамик выключен" : "🔊 Динамик включён"); }}>
+                <Icon name={speakerOn ? "Volume2" : "VolumeX"} size={22} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── ADD CONTACT MODAL ── */}
+      {showAddContact && (
+        <div className="ime-call-overlay" onClick={() => setShowAddContact(false)}>
+          <div className="ime-call-modal" style={{ padding: "28px 32px", minWidth: 300 }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ fontSize: 36, marginBottom: 8 }}>👤</div>
+            <div className="ime-call-modal-name" style={{ marginBottom: 16 }}>Новый контакт</div>
+            <input
+              className="ime-profile-input" style={{ marginBottom: 10, width: "100%" }}
+              placeholder="Имя" value={newContactName}
+              onChange={(e) => setNewContactName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addContact()}
+              autoFocus
+            />
+            <input
+              className="ime-profile-input" style={{ marginBottom: 20, width: "100%" }}
+              placeholder="Номер телефона (необязательно)" value={newContactPhone}
+              onChange={(e) => setNewContactPhone(e.target.value)}
+            />
+            <div className="nft-modal-btns">
+              <button className="nft-modal-cancel" onClick={() => setShowAddContact(false)}>Отмена</button>
+              <button className="nft-modal-confirm" onClick={addContact}>Добавить</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── NFT SEND: выбор чата ── */}
+      {nftSendTarget && (
+        <div className="ime-call-overlay" onClick={() => setNftSendTarget(null)}>
+          <div className="ime-call-modal" style={{ padding: "20px 24px", minWidth: 300 }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ fontSize: 40, marginBottom: 4 }}>{nftSendTarget.emoji}</div>
+            <div className="ime-call-modal-name" style={{ marginBottom: 4 }}>{nftSendTarget.name}</div>
+            <div style={{ fontSize: 12, color: "var(--ime-text-muted)", marginBottom: 16 }}>Кому отправить?</div>
+            {chats.length === 0 && <div style={{ color: "var(--ime-text-muted)", fontSize: 13, marginBottom: 16 }}>Нет чатов. Добавьте контакт.</div>}
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 200, overflowY: "auto", marginBottom: 16 }}>
+              {chats.map((c) => (
+                <button key={c.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: "rgba(255,255,255,0.05)", border: "none", borderRadius: 10, cursor: "pointer", color: "var(--ime-text)", fontFamily: "Golos Text, sans-serif", fontSize: 14 }}
+                  onClick={() => { const prev = activeId; setActiveId(c.id); sendNFTToChat(nftSendTarget); if (prev !== c.id) setActiveId(c.id); }}>
+                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: getAvatarBg(c.avatar), display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>{c.avatar}</div>
+                  {c.name}
+                </button>
+              ))}
+            </div>
+            <button className="nft-modal-cancel" style={{ width: "100%" }} onClick={() => setNftSendTarget(null)}>Отмена</button>
+          </div>
+        </div>
+      )}
+
+      {/* ── WALLET ACTION MODAL ── */}
+      {walletModal && (
+        <div className="ime-call-overlay" onClick={() => setWalletModal(null)}>
+          <div className="ime-call-modal" style={{ padding: "28px 32px", minWidth: 300 }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ fontSize: 36, marginBottom: 8 }}>{walletModal === "send" ? "📤" : walletModal === "receive" ? "📥" : "🔄"}</div>
+            <div className="ime-call-modal-name" style={{ marginBottom: 6 }}>
+              {walletModal === "send" ? "Отправить TON" : walletModal === "receive" ? "Получить TON" : "Обменять TON"}
+            </div>
+            {walletModal === "receive" ? (
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 12, color: "var(--ime-text-muted)", margin: "12px 0 8px" }}>Ваш адрес</div>
+                <div style={{ fontFamily: "monospace", fontSize: 13, color: "var(--ime-text)", background: "rgba(255,255,255,0.05)", padding: "10px 14px", borderRadius: 10, marginBottom: 16 }}>UQBm...f9Kz</div>
+              </div>
+            ) : (
+              <input
+                className="ime-profile-input" style={{ margin: "14px 0 18px", width: "100%" }}
+                placeholder={walletModal === "send" ? "Сумма в TON" : "TON → RUB"}
+                value={walletInput} onChange={(e) => setWalletInput(e.target.value)}
+                type="number" autoFocus
+              />
+            )}
+            <div style={{ fontSize: 12, color: "var(--ime-text-muted)", marginBottom: 16 }}>
+              Баланс: 💎 {walletBalance.toFixed(2)} TON
+            </div>
+            <div className="nft-modal-btns">
+              <button className="nft-modal-cancel" onClick={() => setWalletModal(null)}>Отмена</button>
+              <button className="nft-modal-confirm" onClick={handleWalletAction}>
+                {walletModal === "send" ? "Отправить" : walletModal === "receive" ? "Скопировать адрес" : "Открыть биржу"}
+              </button>
             </div>
           </div>
         </div>

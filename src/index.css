@@ -1857,11 +1857,92 @@ body {
 .ime-call-action.mic {
   background: #2e3652;
 }
+.ime-call-action.mic.muted {
+  background: #4a1a2a;
+}
 .ime-call-action.end {
   background: #e53e3e;
 }
 .ime-call-action.speaker {
   background: #2e3652;
+}
+.ime-call-action.active-speaker {
+  background: rgba(124, 111, 255, 0.4);
+}
+
+/* Video call */
+.video-call-screen {
+  width: 240px;
+  height: 160px;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 8px;
+  background: #0a0a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 30px rgba(124, 111, 255, 0.25);
+}
+.video-call-bg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  animation: floatEmoji 3s ease-in-out infinite;
+}
+.video-call-self {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  background: #1a1f2e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(124, 111, 255, 0.4);
+}
+
+/* Chat context menu */
+.chat-menu-popup {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 50;
+  background: #1e2230;
+  border-radius: 12px;
+  border: 1px solid var(--ime-divider);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  min-width: 180px;
+  animation: scaleIn 0.15s ease;
+}
+.chat-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 16px;
+  background: transparent;
+  border: none;
+  color: var(--ime-text);
+  font-size: 14px;
+  font-family: "Golos Text", sans-serif;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-align: left;
+}
+.chat-menu-item:hover {
+  background: var(--ime-hover);
+}
+.chat-menu-item.danger {
+  color: #ff6b8a;
+}
+.chat-menu-item.danger:hover {
+  background: rgba(255, 107, 138, 0.1);
 }
 
 /* Toast */
